@@ -36,6 +36,7 @@ import org.adempiere.webui.component.Combobox;
 import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Textbox;
+import org.adempiere.webui.component.ToolBarButton;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.event.TokenEvent;
 import org.adempiere.webui.exception.ApplicationException;
@@ -81,10 +82,13 @@ import org.zkoss.zul.Image;
 /**
  *
  * @author  <a href="mailto:agramdass@gmail.com">Ashley G Ramdass</a>
- * @date    Feb 25, 2007
- * @version $Revision: 0.10 $
  * @author <a href="mailto:sendy.yagambrum@posterita.org">Sendy Yagambrum</a>
- * @date    July 18, 2007
+ * @author eEvolution author Victor Perez <victor.perez@e-evolution.com>
+ * @see  [ 1258 ]The change role throw exception  </a>
+ *         <a href="https://github.com/adempiere/adempiere/issues/1258">
+ * @author Raul Muñoz, rMunoz@erpya.com , http://www.erpya.com
+ * <li> FR [ 1769 ] Add option to restore the password from the login
+ * @see https://github.com/adempiere/adempiere/issues/1699
  */
 public class LoginPanel extends Window implements EventListener
 {
@@ -105,6 +109,7 @@ public class LoginPanel extends Window implements EventListener
     private Combobox lstLanguage;
     private LoginWindow wndLogin;
     private Checkbox chkRememberMe;
+    private ToolBarButton btnForgotPass;
 
     public LoginPanel(Properties ctx, LoginWindow loginWindow)
     {
@@ -124,7 +129,7 @@ public class LoginPanel extends Window implements EventListener
     {
     	Div div = new Div();
     	div.setSclass(ITheme.LOGIN_BOX_HEADER_CLASS);
-    	Label label = new Label("My Customization works!");
+    	Label label = new Label("Login");
     	label.setSclass(ITheme.LOGIN_BOX_HEADER_TXT_CLASS);
     	div.appendChild(label);
     	this.appendChild(div);
@@ -196,6 +201,21 @@ public class LoginPanel extends Window implements EventListener
         	tr.appendChild(td);
         	td.appendChild(chkRememberMe);
     	}
+    	
+    	tr = new Tr();
+    	tr.setId("rowPasswordReset");
+    	table.appendChild(tr);
+    	td = new Td();
+    	tr.appendChild(td);
+    	td.setSclass(ITheme.LOGIN_LABEL_CLASS);
+    	td.appendChild(new Label(""));
+    	td = new Td();
+    	tr.appendChild(td);
+    	td.setDynamicProperty("colspan", "2");
+    	td.setSclass(ITheme.LOGIN_LABEL_CLASS);
+    	td.setStyle("text-align:left");
+    	td.appendChild(btnForgotPass);
+    	btnForgotPass.addEventListener(Events.ON_CLICK,this);
 
     	div = new Div();
     	div.setSclass(ITheme.LOGIN_BOX_FOOTER_CLASS);
@@ -296,6 +316,8 @@ public class LoginPanel extends Window implements EventListener
 
         chkRememberMe = new Checkbox(Msg.getMsg(Language.getBaseAD_Language(), "RememberMe"));
 
+        btnForgotPass = new ToolBarButton(Msg.getMsg(Language.getBaseAD_Language(), "ForgotPassword"));
+    	
         // Make the default language the language of client System
         String defaultLanguage = MClient.get(ctx, 0).getAD_Language();
         for(int i = 0; i < lstLanguage.getItemCount(); i++)
@@ -313,8 +335,11 @@ public class LoginPanel extends Window implements EventListener
     public void onEvent(Event event)
     {
         Component eventComp = event.getTarget();
-
-        if (event.getTarget().getId().equals(ConfirmPanel.A_OK))
+        
+        if(event.getTarget().equals(btnForgotPass)) {
+        	wndLogin.resetPassword();
+        }
+        else if (event.getTarget().getId().equals(ConfirmPanel.A_OK))
         {
             validateLogin();
         }
@@ -373,6 +398,8 @@ public class LoginPanel extends Window implements EventListener
     	lblPassword.setValue(res.getString("Password"));
     	lblLanguage.setValue(res.getString("Language"));
     	chkRememberMe.setLabel(Msg.getMsg(language, "RememberMe"));
+    	if(Msg.getMsg(language, "ForgotPassword") != null)
+    		btnForgotPass.setLabel(Msg.getMsg(language, "ForgotPassword"));
     }
 
 	private Language findLanguage(String langName) {
@@ -390,6 +417,18 @@ public class LoginPanel extends Window implements EventListener
     **/
     public void validateLogin()
     {
+		//	Validate UUID supported
+	    DB.validateSupportedUUIDFromDB();
+        /* Check DB version */
+        String version = DB.getSQLValueString(null, "SELECT Version FROM AD_System");
+        //  Identical DB version
+        if (! Adempiere.DB_VERSION.equals(version)) {
+            String AD_Message = "DatabaseVersionError";
+            //  Code assumes Database version {0}, but Database has Version {1}.
+            String msg = Msg.getMsg(ctx, AD_Message);   //  complete message
+            msg = MessageFormat.format(msg, new Object[] {Adempiere.DB_VERSION, version});
+            throw new ApplicationException(msg);
+        }
         Login login = new Login(ctx);
         String userId = txtUserId.getValue();
         String userPassword = txtPassword.getValue();
@@ -412,8 +451,9 @@ public class LoginPanel extends Window implements EventListener
         }
 
         KeyNamePair rolesKNPairs[] = login.getRoles(userId, userPassword);
-        if(rolesKNPairs == null || rolesKNPairs.length == 0)
-            throw new WrongValueException("User Id or Password invalid!!!");
+        if(rolesKNPairs == null || rolesKNPairs.length == 0) {
+        	throw new WrongValueException("User Id or Password invalid!!!");
+        }
 
         else
         {
@@ -444,18 +484,6 @@ public class LoginPanel extends Window implements EventListener
 		// End of temporary code for [ adempiere-ZK Web Client-2832968 ] User context lost?
 
         Env.setContext(ctx, BrowserToken.REMEMBER_ME, chkRememberMe.isChecked());
-
-        /* Check DB version */
-        String version = DB.getSQLValueString(null, "SELECT Version FROM AD_System");
-        //  Identical DB version
-        if (! Adempiere.DB_VERSION.equals(version)) {
-            String AD_Message = "DatabaseVersionError";
-            //  Code assumes Database version {0}, but Database has Version {1}.
-            String msg = Msg.getMsg(ctx, AD_Message);   //  complete message
-            msg = MessageFormat.format(msg, new Object[] {Adempiere.DB_VERSION, version});
-            throw new ApplicationException(msg);
-        }
-
     }
 
 	private String getUpdateTimeoutTextScript() {
@@ -468,4 +496,17 @@ public class LoginPanel extends Window implements EventListener
 		return s;
 	}
 
+	public String getTypedPassword()
+	{
+		if (txtPassword != null)
+			return txtPassword.getValue();
+
+		return null;
+	}
+
+	public void setTypedPassword(String passwod)
+	{
+		if (txtPassword != null)
+			txtPassword.setValue(passwod);
+	}
 }

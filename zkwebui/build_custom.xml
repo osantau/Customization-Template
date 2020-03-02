@@ -164,7 +164,7 @@
 	</target>
 
     <target name="compile" depends="makedir" description="Compile zk customizations">
-        <javac  target="1.7" encoding="UTF-8"
+        <javac  target="1.8" encoding="UTF-8"
                srcdir="WEB-INF/src"
                destdir="${build.dir}"
                debug="${compile.debug}"
