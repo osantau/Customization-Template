@@ -37,3 +37,4 @@ migration/postgresql.properties
 .DS_Store?
 ._*
 install/patch/
+/lib_customization
