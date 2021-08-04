@@ -104,6 +104,7 @@ public class LoginPanel extends Window implements EventListener
     private Label lblUserId;
     private Label lblPassword;
     private Label lblLanguage;
+    private Label lblLogin;
     private Textbox txtUserId;
     private Textbox txtPassword;
     private Combobox lstLanguage;
@@ -129,9 +130,9 @@ public class LoginPanel extends Window implements EventListener
     {
     	Div div = new Div();
     	div.setSclass(ITheme.LOGIN_BOX_HEADER_CLASS);
-    	Label label = new Label("Login");
-    	label.setSclass(ITheme.LOGIN_BOX_HEADER_TXT_CLASS);
-    	div.appendChild(label);
+//    	Label label = new Label("Login");
+    	lblLogin.setSclass(ITheme.LOGIN_BOX_HEADER_TXT_CLASS);
+    	div.appendChild(lblLogin);
     	this.appendChild(div);
 
     	Table table = new Table();
@@ -268,6 +269,10 @@ public class LoginPanel extends Window implements EventListener
 
     private void initComponents()
     {
+    	lblLogin = new Label();
+    	lblLogin.setId("lblLogin");
+    	lblLogin.setValue("Login");
+    	
         lblUserId = new Label();
         lblUserId.setId("lblUserId");
         lblUserId.setValue("User ID");
@@ -394,6 +399,7 @@ public class LoginPanel extends Window implements EventListener
 		Locale.setDefault(loc);
 		res = ResourceBundle.getBundle(RESOURCE, loc);
 
+		lblLogin.setValue(res.getString("Login"));
     	lblUserId.setValue(res.getString("User"));
     	lblPassword.setValue(res.getString("Password"));
     	lblLanguage.setValue(res.getString("Language"));

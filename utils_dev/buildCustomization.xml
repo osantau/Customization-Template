@@ -14,7 +14,7 @@
 	<property name="src" value="src"/>
 	<property name="build.dir" value="build"/>
 	<target name="init" description="initialization target">
-		<echo message="=========== Build Adempiere Customizations - ${env.ENCODING}"/>
+		<echo message="=========== Build Adempiere Customizations - ${env.ENCODING}"/>		
 		<!-- Create the time stamp -->
 		<tstamp/>
 	</target>
@@ -37,8 +37,9 @@
 		
   <target name="dist" depends="jar" description="Deploy the customizations." >
 	<echo message="=========== Install customizations"/>
-	<!--<copy todir="${adempiere.customLibDir}" file="${dist.dir}/${adempiere.customJarFile}" verbose="true"/>-->
-	<!--<copy todir="${adempiere.zkCustomLibDir}" file="${dist.dir}/${adempiere.zkCustomJarFile}" verbose="true"/>-->	
-  </target>
-	
+	<!--<copy todir="${adempiere.customLibDir}" file="${dist.dir}/${adempiere.customJarFile}" verbose="true"/>
+	<copy todir="${adempiere.zkCustomLibDir}" file="${dist.dir}/${adempiere.zkCustomJarFile}" verbose="true"/> -->	 
+  	<copy todir="${adempiere.home.lib}" file="${dist.dir}/${adempiere.customJarFile}" verbose="true"/>
+  	<copy todir="${adempiere.home.lib}" file="${dist.dir}/${adempiere.zkCustomJarFile}" verbose="true"/>
+ </target>
 </project>
