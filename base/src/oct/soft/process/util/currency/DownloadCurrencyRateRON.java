@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.GregorianCalendar;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -16,7 +14,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MConversionType;
 import org.compiere.model.MCurrency;
-import org.compiere.model.MDepreciationExp;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
